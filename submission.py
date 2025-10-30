@@ -18,8 +18,7 @@ class DateParser(DataProcessor):
         Args:
             date_format: String format for parsing dates (default: "%Y-%m-%d")
         """
-        # TODO: Store the date_format
-        pass
+        self.date_format = date_format
     
     def process(self, entries):
         """
@@ -31,39 +30,43 @@ class DateParser(DataProcessor):
         Returns:
             List of dictionaries with 'date' (datetime) and 'text' (str) keys
         """
-        # TODO: Implement this method
-        # Hint: Try to parse the beginning of each line as a date
-        # If successful, split on ": " to separate date from text
-        # Skip entries that don't have valid dates
-        pass
+        results = []
+        
+        for line in entries:
+            try:
+                date_str, text = line.split(": ", 1)
+                parsed_date = datetime.strptime(date_str, self.date_format)
+                results.append({'date': parsed_date, 'text': text})
+            except Exception:
+                continue
+        
+        return results
 
+# Test 1: DateParser basic functionality
+parser = DateParser(date_format="%Y-%m-%d")
+entries = ["2024-10-15: Event 1", "2024-10-16: Event 2"]
+result = parser.process(entries)
+print(f"Parsed {len(result)} entries")  # Should be 2
 
 class WeekdayFilter(DataProcessor):
     """Filter entries to keep only specific days of the week."""
     
     def __init__(self, allowed_days):
-        """
-        Initialize the filter.
-        
-        Args:
-            allowed_days: List of day names to keep (e.g., ['Monday', 'Friday'])
-        """
-        # TODO: Store allowed_days
-        pass
+        self.allowed_days = allowed_days
     
     def process(self, entries):
-        """
-        Filter entries by day of week.
-        
-        Args:
-            entries: List of dictionaries with 'date' and 'text' keys
-            
-        Returns:
-            List of entries where the date falls on an allowed day
-        """
-        # TODO: Implement this method
-        # Hint: Use date.strftime("%A") to get the day name
-        pass
+        results = []
+        for entry in entries:
+            day_name = entry['date'].strftime("%A")
+            if day_name in self.allowed_days:
+                results.append(entry)
+        return results
+# Test 2: DateParser with invalid entries
+parser = DateParser(date_format="%Y-%m-%d")
+entries = ["2024-10-15: Valid", "Not a date", "2024-10-16: Also valid"]
+result = parser.process(entries)
+print(f"Parsed {len(result)} entries")  # Should be 2 (skips invalid)
+
 
 
 class DateFormatter(DataProcessor):
@@ -106,4 +109,3 @@ class ProcessingPipeline:
         for processor in self.processors:
             result = processor.process(result)
         return result
-    pass
